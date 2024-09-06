@@ -18,5 +18,5 @@ if response.status_code == 200:
     
     # saving the DataFrame to another file or manipulate it as needed
     # df.to_csv('processed_stromproduktion_swissgrid.csv', index=False)
-
+else:
     print("Failed to download the file. Status code:", response.status_code)

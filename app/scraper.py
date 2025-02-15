@@ -12,7 +12,7 @@ import io
 from PIL import Image
 import pandas as pd
 from app.utils import generate_relative_path 
-from app.sentinel_scrape import get_satellite_data
+from app.sentinel_scraper import get_satellite_data
 
 # Setup logger
 logging.basicConfig(level=logging.INFO)

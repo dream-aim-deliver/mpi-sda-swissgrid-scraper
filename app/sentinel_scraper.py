@@ -3,7 +3,6 @@ from PIL import Image
 import numpy as np
 import os
 import logging
-import requests
 
 def get_satellite_data(coords, date, resolution, image_dir, data_type, sentinel_client_id, sentinel_client_secret):
   

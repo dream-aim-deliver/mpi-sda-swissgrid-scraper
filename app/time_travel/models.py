@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Literal, Union
 
+
 class SwissgridRowSchema(BaseModel):
     timestamp: str
     model: str

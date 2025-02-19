@@ -1,11 +1,12 @@
+import json
 import logging
 import sys
+from app.config import SUPPORTED_DATASET_EVALSCRIPTS
 from app.sdk.scraped_data_repository import ScrapedDataRepository
 from app.setup import datetime_parser, setup, string_validator
 from app.scraper import scrape
 
 def main(
-    case_study_name: str,
     job_id: int,
     tracer_id: str,
     latitude: str,
@@ -19,6 +20,7 @@ def main(
     sentinel_client_secret:str,
     predict_url: str,
     prediction_model_name: str,
+    datasets_evalscripts: str,
     kp_host: str,
     kp_port: str,
     kp_auth_token: str,
@@ -27,8 +29,11 @@ def main(
 ) -> None:
 
     try:
+        datasets_evalscripts_loaded = json.loads(datasets_evalscripts)
         logger = logging.getLogger(__name__)
         logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
+
+        case_study_name = "swissgrid"
 
         required_variables = [
             case_study_name,
@@ -43,14 +48,14 @@ def main(
         ] 
     
         if not all(required_variables):
-            raise ValueError(f"The following variables are required: {required_variables}")
+            raise ValueError(f"The following variables are required: {",".join(required_variables)}")
 
         string_variables = {
             "case_study_name": case_study_name,
             "job_id": job_id,
             "tracer_id": tracer_id,
             "latitude": latitude,
-            "longitude": longitude
+            "longitude": longitude,
         }
 
         logger.info(f"Validating string variables:  {string_variables}")
@@ -66,6 +71,31 @@ def main(
         if start_date_dt > end_date_dt:
             raise ValueError(f"Start date must be before end date. Found: {start_date_dt} > {end_date_dt}.")
         
+        final_dataset_evalscripts = {}
+        dataset_names = datasets_evalscripts_loaded.keys()
+
+        for dataset_name in dataset_names:
+            if dataset_name not in SUPPORTED_DATASET_EVALSCRIPTS.keys():
+                logger.error(
+                    f"Dataset {dataset_name} not supported. Use one of {SUPPORTED_DATASET_EVALSCRIPTS.keys()}"
+                )
+                sys.exit(1)
+            requested_evalscripts = datasets_evalscripts[dataset_name]
+            supported_evalscripts = [x['name'] for x in SUPPORTED_DATASET_EVALSCRIPTS[dataset_name]["supported_evalscripts"]]
+            for evalscript in requested_evalscripts:
+                if evalscript not in supported_evalscripts:
+                    logger.error(
+                        f"Evalscript {evalscript} not supported. Use one of {SUPPORTED_DATASET_EVALSCRIPTS[dataset_name]['supported_evalscripts']}"
+                    )
+                    raise ValueError(
+                        f"Evalscript {evalscript} not supported for {dataset_name}. Use one of {SUPPORTED_DATASET_EVALSCRIPTS[dataset_name]['supported_evalscripts']}"
+                    )
+            final_dataset_evalscripts[dataset_name] = SUPPORTED_DATASET_EVALSCRIPTS[dataset_name]
+            final_dataset_evalscripts[dataset_name]["evalscripts"] = [x for x in SUPPORTED_DATASET_EVALSCRIPTS[dataset_name]["supported_evalscripts"] if x["name"] in requested_evalscripts]
+        
+        logger.info(f"Setting up time travel for case study: {case_study_name}")
+
+
         kernel_planckster, protocol, file_repository = setup(
             job_id=job_id,
             logger=logger,
@@ -81,10 +111,19 @@ def main(
             file_repository=file_repository,
         )
 
+        root_relative_path = f"{case_study_name}/{tracer_id}/{job_id}"
+        relevant_files = kernel_planckster.list_source_data(root_relative_path)
+
+        if not relevant_files or len(relevant_files) == 0:
+            logger.error(f"No relevant files found in {root_relative_path}.")
+            sys.exit(1)
+        print(relevant_files)
+
         logger.info(f"Scraper setup successfully for case study: {case_study_name}")
         logger.debug(f"__main__ function invoked with arguments: {locals()}")
+
     except Exception as e:
-        logger.error(f"Error setting up scraper: {e}")
+        logger.error(f"Unable to setup the swissgrid scraper. Error: {e}")
         sys.exit(1)
 
     logger.info(f"Scraping data for case study: {case_study_name}")
@@ -213,6 +252,13 @@ if __name__ == "__main__":
         required=True,
         help="Name of the prediction model to use",
     )
+
+    parser.add_argument(
+        "--datasets_evalscripts",
+        type=str,
+        required=True,
+        help="Datasets and evalscripts to use for scraping",
+    )
     
     parser.add_argument(
         "--kp_host",
@@ -271,5 +317,6 @@ if __name__ == "__main__":
         sentinel_client_id=args.sentinel_client_id,
         sentinel_client_secret=args.sentinel_client_secret,
         predict_url=args.predict_url,
-        prediction_model_name=args.prediction_model_name
+        prediction_model_name=args.prediction_model_name,
+        datasets_evalscripts=args.datasets_evalscripts
     )

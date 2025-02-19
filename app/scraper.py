@@ -5,10 +5,9 @@ import time
 import numpy as np
 from typing import List
 from PIL import Image
-from io import BytesIO
 import logging
 import os
-import io
+#import io
 from PIL import Image
 import pandas as pd
 from app.utils import generate_relative_path 
@@ -32,7 +31,6 @@ def fetch_image(latitude: str, longitude: str, date:datetime, resolution: int, i
         return None
 
 
-
 def save_image(image, path, factor=1.0, clip_range=(0, 1)):
     """Save the image to the given path."""
     np_image = np.array(image) * factor
@@ -40,7 +38,25 @@ def save_image(image, path, factor=1.0, clip_range=(0, 1)):
     np_image = (np_image * 255).astype(np.uint8)
     Image.fromarray(np_image).save(path)
 
-def scrape(case_study_name: str, job_id: int, tracer_id: str, scraped_data_repository: ScrapedDataRepository, log_level: str, latitude:str, longitude:str, start_date: datetime, end_date: datetime, resolution:int , data_type:str, file_dir: str, sentinel_client_id:str, sentinel_client_secret:str) -> JobOutput:
+
+def scrape(
+        case_study_name: str,
+        job_id: int,
+        tracer_id: str,
+        scraped_data_repository: ScrapedDataRepository,
+        log_level: str,
+        latitude:str,
+        longitude:str,
+        start_date: datetime,
+        end_date: datetime,
+        resolution:int,
+        data_type:str,
+        file_dir: str,
+        sentinel_client_id:str,
+        sentinel_client_secret:str,
+        predict_url: str,
+        prediction_model_name: str
+    ) -> JobOutput:
     
     job_state = BaseJobState.CREATED
 
@@ -78,14 +94,14 @@ def scrape(case_study_name: str, job_id: int, tracer_id: str, scraped_data_repos
             save_image(image, image_path, factor=1.5 / 255, clip_range=(0, 1))
             logger.info(f"Scraped Image at {time.time()} and saved to: {image_path}")
             relative_path = generate_relative_path(
-            case_study_name=case_study_name,
-            tracer_id=tracer_id,
-            job_id=job_id,
-            timestamp=unix_timestamp,
-            dataset="sentinel",     
-            evalscript_name=data_type,
-            image_hash="nohash",
-            file_extension=file_extension
+                case_study_name=case_study_name,
+                tracer_id=tracer_id,
+                job_id=job_id,
+                timestamp=unix_timestamp,
+                dataset="sentinel",     
+                evalscript_name=data_type,
+                image_hash="nohash",
+                file_extension=file_extension
             )
 
             media_data = KernelPlancksterSourceData(
@@ -95,13 +111,14 @@ def scrape(case_study_name: str, job_id: int, tracer_id: str, scraped_data_repos
             )
 
             scraped_data_repository.register_scraped_photo(
-            job_id=job_id,
-            source_data=media_data,
-            local_file_name=image_path,
+                job_id=job_id,
+                source_data=media_data,
+                local_file_name=image_path,
             )
 
             output_data_list.append(media_data)
             success = True
+
     except Exception as error:
         logger.error(f"{job_id}: Unable to scrape data. Job with tracer_id {tracer_id} failed. Job state was '{job_state.value}' Error: {error}")
 

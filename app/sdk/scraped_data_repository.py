@@ -86,6 +86,8 @@ class ScrapedDataRepository:
                 )
 
         return source_data
+
+
     def register_scraped_json(self, source_data: KernelPlancksterSourceData, job_id: int, local_file_name: str) -> KernelPlancksterSourceData:
 
         match self.protocol:

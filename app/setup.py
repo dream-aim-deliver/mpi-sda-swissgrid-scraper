@@ -52,7 +52,7 @@ def _setup_kernel_planckster(
         # Setup the Kernel Planckster Gateway
         kernel_planckster = KernelPlancksterGateway(
             host=kernel_planckster_host,
-            port=kernel_planckster_port,
+            port=str(kernel_planckster_port),
             auth_token=kernel_planckster_auth_token,
             scheme=kernel_planckster_scheme,
         )
@@ -66,8 +66,6 @@ def _setup_kernel_planckster(
             f"{job_id}: Unable to setup the Kernel Planckster Gateway. Error:\n{error}"
         )
         raise error
-
-
 
 def _setup_file_repository(
     job_id: int,
@@ -89,8 +87,6 @@ def _setup_file_repository(
     except Exception as error:
         logger.error(f"{job_id}: Unable to setup the File Repository. Error:\n{error}")
         raise error
-
-
 
 def setup(
     job_id: int,

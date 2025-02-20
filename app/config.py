@@ -1,5 +1,4 @@
 from sentinelhub import DataCollection
-
 SUPPORTED_DATASET_EVALSCRIPTS = {
     "SENTINEL2-L1C": {
         "sentinel_sdk_obj": DataCollection.SENTINEL2_L1C,
@@ -123,14 +122,14 @@ SUPPORTED_DATASET_EVALSCRIPTS = {
                 "description": "A mask of the wildfire areas in the image. The mask is created by thresholding the NDVI and NDWI values in the image."
             },
             {
-                "name" : "optical_thickness",
-                "path" : "",
+                "name" : "optical-thickness",
+                "path" : "https://gist.githubusercontent.com/Rahul-7131/3a500efecf5dbd5af7ebe7cdcc87a0e9/raw/451e3fac3efb0cdfda992f9097940d9e43a29028/optical_thickness.js",
                 "scaling_factor": 255,
                 "clip_range": {
                     "min": 0,
                     "max": 1
                 },
-                "description" : "https://gist.githubusercontent.com/Rahul-7131/3a500efecf5dbd5af7ebe7cdcc87a0e9/raw/451e3fac3efb0cdfda992f9097940d9e43a29028/optical_thickness.js"
+                "description" : "A Sentinel-5P image highlighting areas of interest based on optical thickness in the image."
             }
         ]
     },

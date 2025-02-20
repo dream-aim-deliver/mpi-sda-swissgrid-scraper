@@ -17,9 +17,6 @@ class ScrapedDataRepository:
         self.file_repository = file_repository
         self._logger = logging.getLogger(__name__)
 
-    @property
-    def log_level(self) -> str:
-        return self._log_level
 
     @property
     def logger(self) -> logging.Logger:

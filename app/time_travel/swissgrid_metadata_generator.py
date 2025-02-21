@@ -38,7 +38,8 @@ def generate_time_travel_metadata(
     protocol: ProtocolEnum,
     predict_url: str,
     prediction_model_name: str,
-    power_plant: str,
+    power_plant_name: str,
+    power_plant_bounding_box: str,
 ) -> JobOutput:
 
     case_study_name = "swissgrid"
@@ -86,7 +87,7 @@ def generate_time_travel_metadata(
             timestamp=timestamp,
             images=[],
             data=[],
-            dataDescription=f"This data is a collection of predictions at certain timestamps for indicating whether the power plant {power_plant} is on/off.",
+            dataDescription=f"This data is a collection of predictions at certain timestamps for indicating whether the power plant {power_plant_name} is on/off.",
         )
 
         timestamp_relative_paths = __filter_paths_by_timestamp(
@@ -185,7 +186,7 @@ def generate_time_travel_metadata(
             img_to_append = Image(
                 relativePath=image_path,
                 kind=evalscript_name,
-                description=f"dataset: {dataset} | power plant: {power_plant} | details: {evalscript['description']}",  # TODO: check if the scraper allows for these details
+                description=f"dataset: {dataset} | power plant: {power_plant_name} | coords: {power_plant_bounding_box} | details: {evalscript['description']}",  # TODO: check if the scraper allows for these details
             )
 
             keyframe.images.append(img_to_append)

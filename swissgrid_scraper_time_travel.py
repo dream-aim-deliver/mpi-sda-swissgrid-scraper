@@ -5,10 +5,13 @@ from app.setup import setup, string_validator
 from app.time_travel.swissgrid_metadata_generator import generate_time_travel_metadata
 
 def main(
+    case_study_name: str,
     job_id: int,
     tracer_id: str,
     predict_url: str,
     prediction_model_name: str,
+    power_plant_name: str,
+    power_plant_bounding_box: str,
     kp_host: str,
     kp_port: int,
     kp_auth_token: str,
@@ -19,8 +22,6 @@ def main(
     try:
         logger = logging.getLogger(__name__)
         logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s - %(message)s')
-
-        case_study_name = "swissgrid"
 
         required_variables = [
             job_id,
@@ -84,6 +85,8 @@ def main(
             protocol=protocol,
             predict_url=predict_url,
             prediction_model_name=prediction_model_name,
+            power_plant_name=power_plant_name,
+            power_plant_bounding_box=power_plant_bounding_box,
         )
 
         logger.info(f"{job_id}: Job finished with state: {job_output.job_state.value}")
@@ -104,6 +107,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Scrape data from Sentinel datacollection.")
 
+    parser.add_argument(
+        "--case-study-name",
+        type=str,
+        default="swissgrid",
+        help="The case study name",
+    )
     parser.add_argument(
         "--job-id",
         type=int,
@@ -140,6 +149,20 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--power_plant_name",
+        type=str,
+        required=True,
+        help="Name of the Power Plant",
+    )
+
+    parser.add_argument(
+        "--power_plant_bounding_box",
+        type=str,
+        required=True,
+        help="Bounding box of the Power Plant",
+    )
+
+    parser.add_argument(
         "--kp_host",
         type=str,
         default="60",
@@ -171,6 +194,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(
+        case_study_name=args.case_study_name,
         job_id=args.job_id,
         tracer_id=args.tracer_id,
         log_level=args.log_level,
@@ -180,4 +204,6 @@ if __name__ == "__main__":
         kp_scheme=args.kp_scheme,
         predict_url=args.predict_url,
         prediction_model_name=args.prediction_model_name,
+        power_plant_name=args.power_plant_name,
+        power_plant_bounding_box=args.power_plant_bounding
     )

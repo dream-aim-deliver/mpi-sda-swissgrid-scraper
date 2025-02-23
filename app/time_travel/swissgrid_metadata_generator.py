@@ -133,7 +133,7 @@ def generate_time_travel_metadata(
                 timestamp,
                 dataset,
                 evalscript_name,
-                _,
+                hash,
                 file_extension,
             ) = parse_relative_path(relative_path=image_path)
 
@@ -182,6 +182,13 @@ def generate_time_travel_metadata(
                     )
                 )
                 continue
+            
+            if hash == "empty":
+                keyframe.images.append(Error(
+                    errorMessage=f"No Satellite Image was found for this timestamp. Possibly the satellite did not pass over the given coordinates.",
+                    errorName="EmptyImage",
+                ))
+                continue
 
             img_to_append = Image(
                 relativePath=image_path,
@@ -219,7 +226,7 @@ def generate_time_travel_metadata(
                         )
                     )
                     continue
-
+  
                 for data_row in prediction_result:
                     keyframe.data.append(
                         SwissgridRowSchema(
